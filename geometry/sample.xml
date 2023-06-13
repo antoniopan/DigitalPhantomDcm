@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VolumePhantom dim_z="400" dim_x="512" dim_y="512" xsi:noNamespaceSchemaLocation="volume_phantom.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<origin y="0" z="0" x="0"/>
+	<dimension y="1000" z="1000" x="1000"/>
+	<cube>
+		<center x="0" y="40" z="50"/>
+		<dim x="10" y="10" z="10"/>
+		<p_value>2000</p_value>
+	</cube>
+	<cube>
+		<center x="0" y="-40" z="-50"/>
+		<dim x="10" y="10" z="10"/>
+		<p_value>2000</p_value>
+	</cube>
+	<cylinder>
+		<center y="0" z="0" x="0"/>
+		<height>300</height>
+		<radius>40</radius>
+		<p_value>1500</p_value>
+	</cylinder>
+	<sphere>
+		<center y="0" z="100" x="40"/>
+		<radius>10</radius>
+		<p_value>3000</p_value>
+	</sphere>
+	<sphere>
+		<center y="0" z="-100" x="-40"/>
+		<radius>10</radius>
+		<p_value>3000</p_value>
+	</sphere>
+</VolumePhantom>

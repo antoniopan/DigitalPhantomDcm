@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 (http://www.altova.com) by FranYeste (UIH) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="VolumePhantom" type="volumePhantomType"/>
+	<xs:complexType name="volumePhantomType">
+		<xs:sequence>
+			<xs:element name="origin" type="pointType"/>
+			<xs:element name="dimension" type="pointType"/>
+			<xs:element name="cube" type="cubeType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="cylinder" type="cylinderType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="ellipsoid" type="ellipsoidType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="sphere" type="sphereType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="dim_x" type="xs:int" use="required"/>
+		<xs:attribute name="dim_y" type="xs:int" use="required"/>
+		<xs:attribute name="dim_z" type="xs:int" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="pointType">
+		<xs:attribute name="x" type="xs:float" use="required"/>
+		<xs:attribute name="y" type="xs:float" use="required"/>
+		<xs:attribute name="z" type="xs:float" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="cubeType">
+		<xs:sequence>
+			<xs:element name="center" type="pointType"/>
+			<xs:element name="dim" type="pointType"/>
+			<xs:element name="p_value" type="xs:int"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="sphereType">
+		<xs:sequence>
+			<xs:element name="center" type="pointType"/>
+			<xs:element name="radius" type="xs:float"/>
+			<xs:element name="p_value" type="xs:int"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ellipsoidType">
+		<xs:sequence>
+			<xs:element name="center" type="pointType"/>
+			<xs:element name="a" type="xs:float"/>
+			<xs:element name="b" type="xs:float"/>
+			<xs:element name="c" type="xs:float"/>
+			<xs:element name="p_value" type="xs:int"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="cylinderType">
+		<xs:sequence>
+			<xs:element name="center" type="pointType"/>
+			<xs:element name="height" type="xs:float"/>
+			<xs:element name="radius" type="xs:float"/>
+			<xs:element name="p_value" type="xs:int"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
