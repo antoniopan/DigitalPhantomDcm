@@ -42,7 +42,7 @@ class Cube(geometry_ri.IConvexShape3D):
             return False
         if abs(point.y - self.center.y) > self.dim.v[1] / 2:
             return False
-        if abs(point.z - self.center.z) > self.dim.v[2]/ 2:
+        if abs(point.z - self.center.z) > self.dim.v[2] / 2:
             return False
         return True
 
@@ -63,10 +63,7 @@ class Sphere(geometry_ri.IConvexShape3D):
         self.val = val
 
     def inside(self, point: Geo3d.Point) -> bool:
-        x = self.center.x - point.x
-        y = self.center.y - point.y
-        z = self.center.z - point.z
-        return x**2 + y**2 + z**2 < self.radius**2
+        return self.center.distance(point) < self.radius
 
     def bounding_box(self) -> [Geo3d.Point, Geo3d.Point]:
         return [

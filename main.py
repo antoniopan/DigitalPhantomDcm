@@ -6,11 +6,7 @@ import geometry.volume_phantom
 import geometry.geometry_pi
 import dcm.dcm_generator
 from lxml import etree
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import sys
 
 
 def verify_xml(xml_path: str, xsd_path: str) -> bool:
@@ -20,13 +16,26 @@ def verify_xml(xml_path: str, xsd_path: str) -> bool:
     return xml_schema.validate(xml_doc)
 
 
+def process_volume(cfg_path: str, dcm_template: str, dcm_output: str):
+    if not verify_xml(cfg_path, 'geometry/volume_phantom.xsd'):
+        print("Config file does not comply with xsd.")
+        return
+    vol_gen = geometry.geometry_pi.VolumeGenerator()
+    vol_gen.from_xml(cfg_path)
+    dcm.dcm_generator.write_volume_to_dcm(vol_gen.process_volume(), dcm_template, dcm_output)
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    if verify_xml('geometry/sample.xml', 'geometry/volume_phantom.xsd'):
-        vol_gen = geometry.geometry_pi.VolumeGenerator()
-        vol_gen.from_xml('geometry/sample.xml')
-        dcm.dcm_generator.write_volume_to_dcm(vol_gen.process_volume(), 'cfg/ct_image.dcm', 'test')
-        # config = volume_phantom.CreateFromDocument(open('geometry/sample.xml').read())
-    print_hi('PyCharm')
+    """
+    argv[0]: config file path
+    argv[1]: dicom template file path
+    argv[2]: output dicom directory
+    """
+    if not len(sys.argv) == 3:
+        print("Does not have three arguments, use default.")
+        process_volume('geometry/sample.xml', 'cfg/ct_image.dcm', 'test')
+    else:
+        process_volume(sys.argv[0], sys.argv[1], sys.argv[2])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

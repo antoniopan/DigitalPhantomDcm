@@ -1,3 +1,7 @@
+import copy
+
+import numpy as np
+
 from geometry import geometry_ri
 from volume import volume3d
 from geometry import volume_phantom
@@ -10,7 +14,7 @@ class VolumeGenerator(object):
         self.volume = volume3d.Volume3D()
         self.sampler = geometry_impl.UniformGenerator()
         self.geo_list = []
-        self.sample_lvl = 1
+        self.sample_lvl = 2
 
     def sample_one_pixel(self, pixel_center: Geo3d.Point, pixel_size: Geo3d.Vector,
                          geo: geometry_ri.IConvexShape3D) -> [int, int, int]:
@@ -31,17 +35,32 @@ class VolumeGenerator(object):
         [start_point, end_point] = geo.bounding_box()
         start_pixel = vol.bounding_floor(start_point)
         end_pixel = vol.bounding_ceil(end_point)
-        for i in range(int(start_pixel[0]), int(end_pixel[0])):
-            for j in range(int(start_pixel[1]), int(end_pixel[1])):
-                for k in range(int(start_pixel[2]), int(end_pixel[2])):
-                    pixel_center = vol.pixel_center(i, j, k)
-                    inside_return = geo.inside_range(pixel_center, Geo3d.Vector(self.volume.x_spacing,
-                                                                                self.volume.y_spacing,
-                                                                                self.volume.z_spacing))
+        pixel_vertices_inside = np.zeros(
+            (int(end_pixel[0] - start_pixel[0] + 1), int(end_pixel[1] - start_pixel[1] + 1),
+             int(end_pixel[2] - start_pixel[2] + 1)), dtype='uint8')
+        o = vol.origin()
+        for k in range(int(start_pixel[2]), int(end_pixel[2]) + 1):
+            for j in range(int(start_pixel[1]), int(end_pixel[1]) + 1):
+                for i in range(int(start_pixel[0]), int(end_pixel[0]) + 1):
+                    p = copy.deepcopy(o).move(Geo3d.Vector(vol.x_spacing * i, vol.y_spacing * j, vol.z_spacing * k))
+                    if geo.inside(p):
+                        pixel_vertices_inside[
+                            i - int(start_pixel[0]), j - int(start_pixel[1]), k - int(start_pixel[2])] = 1
+        k = 0
+        for z in range(int(start_pixel[2]), int(end_pixel[2])):
+            j = 0
+            for y in range(int(start_pixel[1]), int(end_pixel[1])):
+                i = 0
+                for x in range(int(start_pixel[0]), int(end_pixel[0])):
+                    pixel_center = vol.pixel_center(x, y, z)
+                    inside_return = pixel_vertices_inside[i, j, k] + pixel_vertices_inside[i, j, k + 1] + \
+                                    pixel_vertices_inside[i, j + 1, k] + pixel_vertices_inside[i, j + 1, k + 1] + \
+                                    pixel_vertices_inside[i + 1, j, k] + pixel_vertices_inside[i + 1, j, k + 1] + \
+                                    pixel_vertices_inside[i + 1, j + 1, k] + pixel_vertices_inside[i + 1, j + 1, k + 1]
                     if inside_return == 0:  # do not change the pixel value
-                        continue
-                    elif inside_return == 2:
-                        vol.pixel_data[i, j, k] = geo.get_pixel_val()
+                        vol.pixel_data[x, y, z] = vol.pixel_data[x, y, z]
+                    elif inside_return == 8:
+                        vol.pixel_data[x, y, z] = geo.get_pixel_val()
                     else:
                         sample_list = self.sampler.generate_sample_point(
                             pixel_center, Geo3d.Vector(self.volume.x_spacing,
@@ -50,8 +69,11 @@ class VolumeGenerator(object):
                         for s in sample_list:
                             if geo.inside(s):
                                 inside_num = inside_num + 1
-                        vol.pixel_data[i, j, k] = (geo.get_pixel_val() * inside_num + vol.pixel_data[i, j, k] *
+                        vol.pixel_data[x, y, z] = (geo.get_pixel_val() * inside_num + vol.pixel_data[x, y, z] *
                                                    (len(sample_list) - inside_num)) / len(sample_list)
+                    i += 1
+                j += 1
+            k += 1
 
     def process_volume(self) -> volume3d.Volume3D:
         for geo in self.geo_list:
@@ -64,13 +86,13 @@ class VolumeGenerator(object):
                                         Geo3d.Point(vol_config.origin.x, vol_config.origin.y, vol_config.origin.z),
                                         Geo3d.Vector(vol_config.dimension.x, vol_config.dimension.y,
                                                      vol_config.dimension.z))
-        for cube in vol_config.cube:
-            c = geometry_impl.Cube(Geo3d.Point(cube.center.x, cube.center.y, cube.center.z),
-                                   Geo3d.Vector(cube.dim.x, cube.dim.y, cube.dim.z), cube.p_value)
-            self.geo_list.append(c)
         for cylinder in vol_config.cylinder:
             c = geometry_impl.Cylinder(Geo3d.Point(cylinder.center.x, cylinder.center.y, cylinder.center.z),
                                        cylinder.height, cylinder.radius, cylinder.p_value)
+            self.geo_list.append(c)
+        for cube in vol_config.cube:
+            c = geometry_impl.Cube(Geo3d.Point(cube.center.x, cube.center.y, cube.center.z),
+                                   Geo3d.Vector(cube.dim.x, cube.dim.y, cube.dim.z), cube.p_value)
             self.geo_list.append(c)
         for ellipsoid in vol_config.ellipsoid:
             e = geometry_impl.Ellipsoid(Geo3d.Point(ellipsoid.center.x, ellipsoid.center.y, ellipsoid.center.z),
