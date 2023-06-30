@@ -5,7 +5,7 @@ import numpy as np
 
 class Volume3D(object):
     def __init__(self, x: int = 512, y: int = 512, z: int = 512, origin: Geo3d.Point = Geo3d.Point(0, 0, 0),
-                dim: Geo3d.Vector = Geo3d.Vector(1000, 1000, 1000)):
+                 dim: Geo3d.Vector = Geo3d.Vector(1000, 1000, 1000)):
         self.center = origin
         self.x_orientation = Geo3d.Vector(1, 0, 0)
         self.y_orientation = Geo3d.Vector(0, 1, 0)
@@ -19,13 +19,23 @@ class Volume3D(object):
         self.z_spacing = range_xyz[2] / z
         self.pixel_data = np.ones((self.x_dim, self.y_dim, self.z_dim), dtype='uint16') * 1000
 
-    def origin(self):
+    def origin(self) -> Geo3d.Point:
+        """
+        :return: The spatial coordinate of the top left anterior vertex
+        """
         o = copy.deepcopy(self.center).move(self.x_orientation * self.x_spacing * self.x_dim * -0.5)
         o.move(self.y_orientation * self.y_spacing * self.y_dim * -0.5)
         o.move(self.z_orientation * self.z_spacing * self.z_dim * -0.5)
         return o
 
-    def pixel_center(self, x, y, z):
+    def pixel_center(self, x, y, z) -> Geo3d.Point:
+        """
+        Return the spatial coordinate of the pixel center
+        :param x: zero beginning index of the pixel along the x-axis
+        :param y: zero beginning index of the pixel along the y-axis
+        :param z: zero beginning index of the pixel along the z-axis
+        :return:
+        """
         p = self.origin().move(self.x_orientation * self.x_spacing * (x + 0.5))
         p.move(self.y_orientation * self.y_spacing * (y + 0.5))
         p.move(self.z_orientation * self.z_spacing * (z + 0.5))
@@ -35,15 +45,25 @@ class Volume3D(object):
         self.pixel_data.resize(self.x_dim, self.y_dim, self.z_dim)
 
     def bounding_floor(self, point: Geo3d.Point) -> [int, int, int]:
+        """
+        Return the maximum voxel indices which is minor than the given point
+        :param point:
+        :return:
+        """
         p0 = self.origin()
         o = np.array([p0.x, p0.y, p0.z])
         c = np.maximum(o, np.array([point.x, point.y, point.z]))
         return np.floor((c - o) / np.array([self.x_spacing, self.y_spacing, self.z_spacing]))
 
     def bounding_ceil(self, point: Geo3d.Point) -> [int, int, int]:
+        """
+        Return the minimum voxel indices which is larger than the given point
+        :param point:
+        :return:
+        """
         p1 = copy.deepcopy(self.origin()).move(
             Geo3d.Vector(self.x_dim * self.x_spacing, self.y_dim * self.y_spacing, self.z_dim * self.z_spacing))
         o = np.array([p1.x, p1.y, p1.z])
         c = np.minimum(o, np.array([point.x, point.y, point.z]))
         return [self.x_dim, self.y_dim, self.z_dim] - \
-            np.floor((o - c) / np.array([self.x_spacing, self.y_spacing, self.z_spacing]))
+               np.floor((o - c) / np.array([self.x_spacing, self.y_spacing, self.z_spacing]))

@@ -32,6 +32,12 @@ class VolumeGenerator(object):
             return int(geo.get_pixel_val() * inside_num / len(sample_list))
 
     def process_one_shape(self, vol: volume3d.Volume3D, geo: geometry_ri.IConvexShape3D):
+        """
+        Update the voxel values for one geometry
+        :param vol:
+        :param geo:
+        :return:
+        """
         [start_point, end_point] = geo.bounding_box()
         start_pixel = vol.bounding_floor(start_point)
         end_pixel = vol.bounding_ceil(end_point)
@@ -39,6 +45,9 @@ class VolumeGenerator(object):
             (int(end_pixel[0] - start_pixel[0] + 1), int(end_pixel[1] - start_pixel[1] + 1),
              int(end_pixel[2] - start_pixel[2] + 1)), dtype='uint8')
         o = vol.origin()
+        # Assume that there is no overlap or spacing between adjacent voxels,
+        # Adjacent voxels share four vertices spatially.
+        # Calculate each vertex if it is inside or outside the geometry
         for k in range(int(start_pixel[2]), int(end_pixel[2]) + 1):
             for j in range(int(start_pixel[1]), int(end_pixel[1]) + 1):
                 for i in range(int(start_pixel[0]), int(end_pixel[0]) + 1):
@@ -57,11 +66,16 @@ class VolumeGenerator(object):
                                     pixel_vertices_inside[i, j + 1, k] + pixel_vertices_inside[i, j + 1, k + 1] + \
                                     pixel_vertices_inside[i + 1, j, k] + pixel_vertices_inside[i + 1, j, k + 1] + \
                                     pixel_vertices_inside[i + 1, j + 1, k] + pixel_vertices_inside[i + 1, j + 1, k + 1]
-                    if inside_return == 0:  # do not change the pixel value
+                    if inside_return == 0:
+                        # All the vertices are outside the geometry
+                        # do not change the pixel value
                         vol.pixel_data[x, y, z] = vol.pixel_data[x, y, z]
                     elif inside_return == 8:
+                        # All the vertices are inside the geometry
                         vol.pixel_data[x, y, z] = geo.get_pixel_val()
                     else:
+                        # The voxel is located across the geometry surface
+                        # sample inside the geometry to determine blend factor
                         sample_list = self.sampler.generate_sample_point(
                             pixel_center, Geo3d.Vector(self.volume.x_spacing,
                                                        self.volume.y_spacing, self.volume.z_spacing), self.sample_lvl)

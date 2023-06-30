@@ -13,7 +13,8 @@ def write_volume_to_dcm(vol: volume3d.Volume3D, sample_file_path: str, output_di
     ds = pydicom.dcmread(sample_file_path)
     ds.PatientName = "Test^Patient^Name"
     ds.PatientID = "123456"
-    ds.InstanceUID = pydicom.uid.generate_uid()
+    ds.StudyInstanceUID = pydicom.uid.generate_uid()
+    ds.SeriesInstanceUID = pydicom.uid.generate_uid()
 
     ds.PixelSpacing = [vol.x_spacing, vol.y_spacing]
     ds.Columns = vol.x_dim
@@ -22,7 +23,9 @@ def write_volume_to_dcm(vol: volume3d.Volume3D, sample_file_path: str, output_di
     ds.ImageOrientationPatient = temp.extend(vol.y_orientation.v)
     vol_origin = vol.origin()
     for i in range(vol.z_dim):
+        ds.SOPInstanceUID = pydicom.uid.generate_uid()
         ds.ImagePositionPatient = [vol_origin.x, vol_origin.y, vol_origin.z]
+        ds.ImageOrientationPatient = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         ds.InstanceNumber = i
         ds.PixelData = np.ascontiguousarray(np.transpose(vol.pixel_data[:, :, i]))
         prefix = ''
