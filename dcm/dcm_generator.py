@@ -24,7 +24,7 @@ def write_volume_to_dcm(vol: volume3d.Volume3D, sample_file_path: str, output_di
     vol_origin = vol.origin()
     for i in range(vol.z_dim):
         ds.SOPInstanceUID = pydicom.uid.generate_uid()
-        ds.ImagePositionPatient = [vol_origin.x, vol_origin.y, vol_origin.z]
+        ds.ImagePositionPatient = [vol_origin.x, vol_origin.y, vol_origin.z + vol.z_spacing * 0.5]
         ds.ImageOrientationPatient = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         ds.InstanceNumber = i
         ds.PixelData = np.ascontiguousarray(np.transpose(vol.pixel_data[:, :, i]))

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VolumePhantom dim_z="400" dim_x="512" dim_y="512" xsi:noNamespaceSchemaLocation="volume_phantom.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<SSLevel>4</SSLevel>
+	<SSLevel>2</SSLevel>
 	<origin y="0" z="0" x="0"/>
 	<dimension y="1000" z="1000" x="1000"/>
 	<cube>
