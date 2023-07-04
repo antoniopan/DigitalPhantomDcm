@@ -4,6 +4,7 @@
 	<xs:element name="VolumePhantom" type="volumePhantomType"/>
 	<xs:complexType name="volumePhantomType">
 		<xs:sequence>
+			<xs:element name="SSLevel" type="xs:int"/>
 			<xs:element name="origin" type="pointType"/>
 			<xs:element name="dimension" type="pointType"/>
 			<xs:element name="cube" type="cubeType" minOccurs="0" maxOccurs="unbounded"/>

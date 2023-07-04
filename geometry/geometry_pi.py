@@ -96,6 +96,7 @@ class VolumeGenerator(object):
 
     def from_xml(self, xml_path: str):
         vol_config = volume_phantom.CreateFromDocument(open(xml_path).read())
+        self.sample_lvl = vol_config.SSLevel
         self.volume = volume3d.Volume3D(vol_config.dim_x, vol_config.dim_y, vol_config.dim_z,
                                         Geo3d.Point(vol_config.origin.x, vol_config.origin.y, vol_config.origin.z),
                                         Geo3d.Vector(vol_config.dimension.x, vol_config.dimension.y,
